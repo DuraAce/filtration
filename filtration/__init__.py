@@ -44,6 +44,8 @@ DateTime = (Date + Suppress(Optional("T")) + Time).set_parse_action(
     lambda toks: datetime.datetime.combine(toks[0].date(), toks[1].time())
 )
 
+Float = Combine(Word(nums) + "." + Optional(Word(nums))).set_parse_action(lambda toks: float(toks[0]))
+
 
 class _Regex(Token):
     def compiler(self, pattern, flags):
@@ -97,6 +99,7 @@ Value = MatchFirst([
     Date,
     Time,
     quoted_string.set_parse_action(remove_quotes),
+    Float,
     Word(nums).set_parse_action(lambda toks: int(toks[0])),
 ]).set_parse_action(Token)
 
@@ -186,10 +189,16 @@ class _Statement:
         self.rhs = rhs
 
     def __call__(self, ctx):
-        if self.op is None:
-            return self.lhs(ctx)
 
-        return self.op(self.lhs(ctx), self.rhs(ctx))
+        try:
+            if self.op is None:
+                return self.lhs(ctx)      
+
+            # Debug print
+            # print(f"LHS: {self.lhs(ctx)}, RHS: {self.rhs(ctx)}, OP Result: {self.op(self.lhs(ctx), self.rhs(ctx))}")
+            return self.op(self.lhs(ctx), self.rhs(ctx))
+        except TypeError:
+            return False
 
 
 Statement = (LHS + Optional(ComparisonOp + RHS)).set_parse_action(
