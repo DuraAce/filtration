@@ -13,6 +13,7 @@ Get Filtration
 ==============
 
 .. code-block:: shell
+
     pip install six
     pip install git+https://github.com/HurricaneLabs/filtration.git
 
